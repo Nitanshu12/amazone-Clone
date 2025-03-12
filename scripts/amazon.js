@@ -1,4 +1,4 @@
-
+import {cart} from '../data/cart.js'
 let productsHTML='';
 
 products.forEach((product)=>{
@@ -85,10 +85,6 @@ products.forEach((product)=>{
 
             document.querySelector('.js-cart-quantity')
             .innerHTML=cartQuantity;
-
-
-            console.log(cart);
-            console.log(cartQuantity);
         })
     })
 
