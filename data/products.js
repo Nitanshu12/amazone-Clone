@@ -1,41 +1,148 @@
-  import { formatCurrency } from "../scripts/utils/money.js";
-  
-  export function getProduct(productId){
-    let matchingProduct;
+import {formatCurrency} from '../scripts/utils/money.js';
 
-    products.forEach((product) => {
-      if (product.id === productId) {
-        matchingProduct = product;
+export function getProduct(productId) {
+  let matchingProduct;
+
+  products.forEach((product) => {
+    if (product.id === productId) {
+      matchingProduct = product;
+    }
+  });
+
+  return matchingProduct;
+}
+
+class Product {
+  id;
+  image;
+  name;
+  rating;
+  priceCents;
+
+  constructor(productDetails) {
+    this.id = productDetails.id;
+    this.image = productDetails.image;
+    this.name = productDetails.name;
+    this.rating = productDetails.rating;
+    this.priceCents = productDetails.priceCents;
+  }
+
+  getStarsUrl() {
+    return `images/ratings/rating-${this.rating.stars * 10}.png`;
+  }
+
+  getPrice() {
+    return `$${formatCurrency(this.priceCents)}`;
+  }
+
+  extraInfoHTML() {
+    return '';
+  }
+}
+
+class Clothing extends Product {
+  sizeChartLink;
+
+  constructor(productDetails) {
+    super(productDetails);
+    this.sizeChartLink = productDetails.sizeChartLink;
+  }
+
+  extraInfoHTML() {
+    // super.extraInfoHTML();
+    return `
+      <a href="${this.sizeChartLink}" target="_blank">
+        Size chart
+      </a>
+    `;
+  }
+}
+
+/*
+const date = new Date();
+console.log(date);
+console.log(date.toLocaleTimeString());
+*/
+
+/*
+console.log(this);
+
+const object2 = {
+  a: 2,
+  b: this.a
+};
+*/
+
+/*
+function logThis() {
+  console.log(this);
+}
+logThis();
+logThis.call('hello');
+
+this
+const object3 = {
+  method: () => {
+    console.log(this);
+  }
+};
+object3.method();
+*/
+
+export let products = [];
+
+export function loadProductsFetch() {
+  const promise = fetch(
+    'https://supersimplebackend.dev/products'
+  ).then((response) => {
+    return response.json();
+  }).then((productsData) => {
+    products = productsData.map((productDetails) => {
+      if (productDetails.type === 'clothing') {
+        return new Clothing(productDetails);
       }
+      return new Product(productDetails);
     });
 
-    return matchingProduct
+    console.log('load products');
+  }).catch((error) => {
+    console.log('Unexpected error. Please try again later.');
+  });
 
-  }
-  class Product{
-    id;
-    image;
-    name;
-    rating;
-    priceCents;
+  return promise;
+}
+/*
+loadProductsFetch().then(() => {
+  console.log('next step');
+});
+*/
 
-    constructor(productDetails){
-      this.id=productDetails.id;
-      this.image=productDetails.image;
-      this.name=productDetails.name;
-      this.rating=productDetails.rating;
-      this.priceCents=productDetails.priceCents;
+export function loadProducts(fun) {
+  const xhr = new XMLHttpRequest();
 
-    }
-    getStarsUrl(){
-      return `images/ratings/rating-${this.rating.stars * 10}.png`
+  xhr.addEventListener('load', () => {
+    products = JSON.parse(xhr.response).map((productDetails) => {
+      if (productDetails.type === 'clothing') {
+        return new Clothing(productDetails);
+      }
+      return new Product(productDetails);
+    });
 
-    }
-    getPrice(){
-      return `$${formatCurrency(this.priceCents)}`
-    }
-  }
-  export const products = [
+    console.log('load products');
+
+    fun();
+  });
+
+  xhr.addEventListener('error', (error) => {
+    console.log('Unexpected error. Please try again later.');
+  });
+
+  xhr.open('GET', 'https://supersimplebackend.dev/products');
+  xhr.send();
+}
+
+/*
+export const products = [
   {
     id: "e43638ce-6aa0-4b85-b27f-e1d07eb678c6",
     image: "images/products/athletic-cotton-socks-6-pairs.jpg",
@@ -694,7 +801,10 @@
       "mens"
     ]
   }
-].map((productDetails)=>{
+].map((productDetails) => {
+  if (productDetails.type === 'clothing') {
+    return new Clothing(productDetails);
+  }
   return new Product(productDetails);
-
 });
+*/
